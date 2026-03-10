@@ -191,13 +191,18 @@ export function useCalculator() {
   };
 
   /**
-   * Toggles the calculator between 'basic' and 'scientific' mode.
+   * Cycles the calculator through 'basic', 'scientific', and 'calculus' modes.
    */
   const toggleMode = () => {
-    updateState((prev) => ({
-      ...prev,
-      mode: prev.mode === 'basic' ? 'scientific' : 'basic',
-    }));
+    updateState((prev) => {
+      const next =
+        prev.mode === 'basic'
+          ? 'scientific'
+          : prev.mode === 'scientific'
+            ? 'calculus'
+            : 'basic';
+      return { ...prev, mode: next };
+    });
   };
 
   /**

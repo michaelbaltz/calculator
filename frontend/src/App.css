@@ -179,3 +179,87 @@ body {
 .calc-mode-toggle--scientific:hover {
   background-color: #6b44a8;
 }
+
+.calc-mode-toggle--calculus {
+  background-color: #0f3460;
+}
+
+.calc-mode-toggle--calculus:hover {
+  background-color: #1a4a80;
+}
+
+/* === Calculus Panel === */
+.calculus-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.calculus-panel__ops {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.calculus-panel__ops .calc-button--calculus {
+  flex: 1;
+  background-color: #2d6a4f;
+  font-size: 0.875rem;
+  padding: 0.625rem 0;
+}
+
+.calculus-panel__ops .calc-button--calculus:hover {
+  background-color: #40916c;
+}
+
+.calculus-panel__ops .calc-button--calculus-active {
+  background-color: #52b788;
+  color: #1a1a2e;
+}
+
+.calculus-panel__input {
+  background-color: #0f3460;
+  border: 1px solid #1a4a80;
+  border-radius: 8px;
+  color: #eaeaea;
+  font-size: 1rem;
+  outline: none;
+  padding: 0.625rem 0.875rem;
+  transition: border-color 0.15s ease;
+  width: 100%;
+}
+
+.calculus-panel__input::placeholder {
+  color: #6b7fa3;
+}
+
+.calculus-panel__input:focus {
+  border-color: #52b788;
+}
+
+.calculus-panel__bounds {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.calculus-panel__bounds .calculus-panel__input {
+  flex: 1;
+}
+
+.calculus-panel__calculate {
+  margin-top: 0.25rem;
+}
+
+.calculus-panel__result {
+  background-color: #0f3460;
+  border-radius: 8px;
+  color: #eaeaea;
+  font-size: 1rem;
+  min-height: 2.5rem;
+  padding: 0.625rem 0.875rem;
+  word-break: break-word;
+}
+
+.calculus-panel__result--error {
+  color: #e94560;
+}

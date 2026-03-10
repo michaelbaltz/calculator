@@ -7,6 +7,7 @@ import Calculator from '../components/Calculator';
 vi.mock('../api/calculatorApi', () => ({
   calculate: vi.fn().mockResolvedValue({ result: 0 }),
   scientific: vi.fn().mockResolvedValue({ result: 0 }),
+  calculus: vi.fn().mockResolvedValue({ result: '2*x' }),
 }));
 
 describe('Calculator', () => {
@@ -74,11 +75,12 @@ describe('Calculator', () => {
     await user.click(screen.getByRole('button', { name: 'Switch to scientific mode' }));
     expect(container.querySelector('.calc-scientific-grid')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Switch to basic mode' }));
+    // From scientific, toggle goes to calculus (hides the sci grid)
+    await user.click(screen.getByRole('button', { name: 'Switch to calculus mode' }));
     expect(container.querySelector('.calc-scientific-grid')).not.toBeInTheDocument();
   });
 
-  it('toggle button label changes to BASIC in scientific mode', async () => {
+  it('toggle button label changes to CALC in scientific mode', async () => {
     const user = userEvent.setup();
     render(<Calculator />);
 
@@ -87,7 +89,64 @@ describe('Calculator', () => {
 
     await user.click(toggleBtn);
     expect(
+      screen.getByRole('button', { name: 'Switch to calculus mode' }).textContent,
+    ).toBe('CALC');
+  });
+
+  it('CALC toggle cycles to calculus mode and renders CalculusPanel', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Calculator />);
+
+    // basic → scientific
+    await user.click(screen.getByRole('button', { name: 'Switch to scientific mode' }));
+    // scientific → calculus
+    await user.click(screen.getByRole('button', { name: 'Switch to calculus mode' }));
+
+    expect(container.querySelector('.calculus-panel')).toBeInTheDocument();
+  });
+
+  it('ButtonGrid is hidden in calculus mode', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Calculator />);
+
+    await user.click(screen.getByRole('button', { name: 'Switch to scientific mode' }));
+    await user.click(screen.getByRole('button', { name: 'Switch to calculus mode' }));
+
+    expect(container.querySelector('.calc-button-grid')).not.toBeInTheDocument();
+  });
+
+  it('Display is hidden in calculus mode', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Calculator />);
+
+    await user.click(screen.getByRole('button', { name: 'Switch to scientific mode' }));
+    await user.click(screen.getByRole('button', { name: 'Switch to calculus mode' }));
+
+    expect(container.querySelector('.calc-display')).not.toBeInTheDocument();
+  });
+
+  it('toggle button label is BASIC in calculus mode', async () => {
+    const user = userEvent.setup();
+    render(<Calculator />);
+
+    await user.click(screen.getByRole('button', { name: 'Switch to scientific mode' }));
+    await user.click(screen.getByRole('button', { name: 'Switch to calculus mode' }));
+
+    expect(
       screen.getByRole('button', { name: 'Switch to basic mode' }).textContent,
     ).toBe('BASIC');
+  });
+
+  it('calculus → basic cycles back correctly', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Calculator />);
+
+    await user.click(screen.getByRole('button', { name: 'Switch to scientific mode' }));
+    await user.click(screen.getByRole('button', { name: 'Switch to calculus mode' }));
+    await user.click(screen.getByRole('button', { name: 'Switch to basic mode' }));
+
+    expect(container.querySelector('.calculus-panel')).not.toBeInTheDocument();
+    expect(container.querySelector('.calc-button-grid')).toBeInTheDocument();
+    expect(container.querySelector('.calc-display')).toBeInTheDocument();
   });
 });

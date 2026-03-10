@@ -148,10 +148,26 @@ describe('useCalculator', () => {
     expect(result.current.mode).toBe('scientific');
   });
 
-  it('toggleMode switches back from scientific to basic', () => {
+  it('toggleMode switches from scientific to calculus', () => {
     const { result } = renderHook(() => useCalculator());
     act(() => result.current.toggleMode());
     act(() => result.current.toggleMode());
+    expect(result.current.mode).toBe('calculus');
+  });
+
+  it('toggleMode cycles back from calculus to basic', () => {
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.toggleMode());
+    act(() => result.current.toggleMode());
+    act(() => result.current.toggleMode());
+    expect(result.current.mode).toBe('basic');
+  });
+
+  it('toggleMode switches back from scientific to basic (legacy two-step)', () => {
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.toggleMode()); // basic → scientific
+    act(() => result.current.toggleMode()); // scientific → calculus
+    act(() => result.current.toggleMode()); // calculus → basic
     expect(result.current.mode).toBe('basic');
   });
 
