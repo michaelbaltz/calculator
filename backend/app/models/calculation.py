@@ -1,6 +1,6 @@
 """Pydantic models for calculator request and response payloads."""
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
@@ -28,3 +28,21 @@ class ErrorResponse(BaseModel):
 
     error: str
     detail: str
+
+
+class ScientificRequest(BaseModel):
+    """Request model for a scientific calculation."""
+
+    operation: Literal["factorial", "log", "log10", "exp", "power", "log_base"]
+    operand: float
+    operand_b: Optional[float] = None  # used for power(x, y) and log_base(x, base)
+
+
+class ScientificResponse(BaseModel):
+    """Response model containing the scientific calculation result and context."""
+
+    result: float
+    operation: str
+    operand: float
+    operand_b: Optional[float]
+    expression: str  # e.g. "log(10)" or "2 ^ 3" or "5!"

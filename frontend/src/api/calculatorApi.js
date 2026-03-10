@@ -19,3 +19,23 @@ export async function calculate(operand_a, operand_b, operator) {
   }
   return response.json();
 }
+
+/**
+ * Sends a scientific calculation request to the backend API.
+ * @param {string} operation - The scientific operation name.
+ * @param {number} operand - The primary operand.
+ * @param {number|null} [operand_b=null] - The optional second operand (for binary ops).
+ * @return {Promise<Object>} The result object from the API.
+ */
+export async function scientific(operation, operand, operand_b = null) {
+  const response = await fetch(`${API_URL}/api/scientific`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ operation, operand, operand_b }),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.detail || 'Calculation failed');
+  }
+  return response.json();
+}

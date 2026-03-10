@@ -22,7 +22,7 @@ function Button({ label, onClick, variant = 'default' }) {
 Button.propTypes = {
   label: PropTypes.string.isRequired,
   onClick: PropTypes.func.isRequired,
-  variant: PropTypes.oneOf(['default', 'operator', 'action', 'equals']),
+  variant: PropTypes.oneOf(['default', 'operator', 'action', 'equals', 'scientific']),
 };
 
 export default Button;

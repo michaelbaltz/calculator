@@ -1,7 +1,17 @@
 import { useState, useRef } from 'react';
-import { calculate } from '../api/calculatorApi';
+import { calculate, scientific } from '../api/calculatorApi';
 
-/** @typedef {{ displayValue: string, operandA: number|null, operator: string|null, waitingForOperand: boolean, error: string|null }} CalculatorState */
+/**
+ * @typedef {{
+ *   displayValue: string,
+ *   operandA: number|null,
+ *   operator: string|null,
+ *   waitingForOperand: boolean,
+ *   error: string|null,
+ *   pendingScientific: string|null,
+ *   mode: 'basic'|'scientific',
+ * }} CalculatorState
+ */
 
 const INITIAL_STATE = {
   displayValue: '0',
@@ -9,6 +19,8 @@ const INITIAL_STATE = {
   operator: null,
   waitingForOperand: false,
   error: null,
+  pendingScientific: null,
+  mode: 'basic',
 };
 
 const MAX_DIGITS = 12;
@@ -18,11 +30,15 @@ const MAX_DIGITS = 12;
  * @return {{
  *   displayValue: string,
  *   error: string|null,
+ *   mode: 'basic'|'scientific',
  *   handleDigit: function(string): void,
  *   handleOperator: function(string): void,
  *   handleEquals: function(): Promise<void>,
  *   handleClear: function(): void,
  *   handleDecimal: function(): void,
+ *   handleScientificUnary: function(string): Promise<void>,
+ *   handleScientificBinary: function(string): void,
+ *   toggleMode: function(): void,
  * }}
  */
 export function useCalculator() {
@@ -77,10 +93,39 @@ export function useCalculator() {
 
   /**
    * Calls the backend API with stored operands and updates display with the result.
+   * Handles both basic arithmetic and pending scientific binary operations.
    * @return {Promise<void>}
    */
   const handleEquals = async () => {
-    const { operandA, operator, displayValue } = stateRef.current;
+    const { operandA, operator, displayValue, pendingScientific } = stateRef.current;
+
+    if (pendingScientific !== null && operandA !== null) {
+      try {
+        const result = await scientific(
+          pendingScientific,
+          operandA,
+          parseFloat(displayValue),
+        );
+        updateState((prev) => ({
+          ...prev,
+          displayValue: String(result.result),
+          operandA: null,
+          operator: null,
+          pendingScientific: null,
+          waitingForOperand: false,
+          error: null,
+        }));
+      } catch (err) {
+        updateState((prev) => ({
+          ...prev,
+          error: err.message,
+          operandA: null,
+          operator: null,
+          pendingScientific: null,
+        }));
+      }
+      return;
+    }
 
     if (operandA === null || operator === null) {
       return;
@@ -104,6 +149,55 @@ export function useCalculator() {
         operator: null,
       }));
     }
+  };
+
+  /**
+   * Immediately calls the scientific API for a unary operation and updates display.
+   * @param {string} operation - The scientific operation name (e.g. 'factorial', 'log').
+   * @return {Promise<void>}
+   */
+  const handleScientificUnary = async (operation) => {
+    const { displayValue } = stateRef.current;
+    try {
+      const result = await scientific(operation, parseFloat(displayValue));
+      updateState((prev) => ({
+        ...prev,
+        displayValue: String(result.result),
+        waitingForOperand: false,
+        error: null,
+      }));
+    } catch (err) {
+      updateState((prev) => ({
+        ...prev,
+        error: err.message,
+      }));
+    }
+  };
+
+  /**
+   * Stores the current display as operandA and records the pending scientific binary operation.
+   * Waits for the user to enter the second operand and press equals.
+   * @param {string} operation - The scientific binary operation name (e.g. 'power', 'log_base').
+   */
+  const handleScientificBinary = (operation) => {
+    updateState((prev) => ({
+      ...prev,
+      operandA: parseFloat(prev.displayValue),
+      pendingScientific: operation,
+      operator: null,
+      waitingForOperand: true,
+      error: null,
+    }));
+  };
+
+  /**
+   * Toggles the calculator between 'basic' and 'scientific' mode.
+   */
+  const toggleMode = () => {
+    updateState((prev) => ({
+      ...prev,
+      mode: prev.mode === 'basic' ? 'scientific' : 'basic',
+    }));
   };
 
   /**
@@ -131,10 +225,14 @@ export function useCalculator() {
   return {
     displayValue: state.displayValue,
     error: state.error,
+    mode: state.mode,
     handleDigit,
     handleOperator,
     handleEquals,
     handleClear,
     handleDecimal,
+    handleScientificUnary,
+    handleScientificBinary,
+    toggleMode,
   };
 }

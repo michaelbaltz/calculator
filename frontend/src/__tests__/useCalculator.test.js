@@ -5,6 +5,9 @@ import * as calculatorApi from '../api/calculatorApi';
 
 vi.mock('../api/calculatorApi');
 
+// Ensure scientific is always a mock function even before specific tests set it up.
+calculatorApi.scientific = calculatorApi.scientific || vi.fn();
+
 describe('useCalculator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -130,5 +133,104 @@ describe('useCalculator', () => {
     act(() => result.current.handleOperator('+'));
     act(() => result.current.handleDecimal());
     expect(result.current.displayValue).toBe('0.');
+  });
+
+  // --- Scientific operation tests ---
+
+  it('initialises with mode "basic"', () => {
+    const { result } = renderHook(() => useCalculator());
+    expect(result.current.mode).toBe('basic');
+  });
+
+  it('toggleMode switches from basic to scientific', () => {
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.toggleMode());
+    expect(result.current.mode).toBe('scientific');
+  });
+
+  it('toggleMode switches back from scientific to basic', () => {
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.toggleMode());
+    act(() => result.current.toggleMode());
+    expect(result.current.mode).toBe('basic');
+  });
+
+  it('handleScientificUnary calls api.scientific with correct args and updates display', async () => {
+    calculatorApi.scientific.mockResolvedValue({ result: 120 });
+
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.handleDigit('5'));
+
+    await act(async () => {
+      await result.current.handleScientificUnary('factorial');
+    });
+
+    expect(calculatorApi.scientific).toHaveBeenCalledWith('factorial', 5);
+    expect(result.current.displayValue).toBe('120');
+    expect(result.current.error).toBeNull();
+  });
+
+  it('handleScientificUnary sets error state when API throws', async () => {
+    calculatorApi.scientific.mockRejectedValue(new Error('Domain error'));
+
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.handleDigit('0'));
+
+    await act(async () => {
+      await result.current.handleScientificUnary('log');
+    });
+
+    expect(result.current.error).toBe('Domain error');
+  });
+
+  it('handleScientificBinary stores operandA and pendingScientific then resolves on equals', async () => {
+    calculatorApi.scientific.mockResolvedValue({ result: 8 });
+
+    const { result } = renderHook(() => useCalculator());
+    // Enter x = 2
+    act(() => result.current.handleDigit('2'));
+    // Press xʸ
+    act(() => result.current.handleScientificBinary('power'));
+    // Enter y = 3
+    act(() => result.current.handleDigit('3'));
+
+    await act(async () => {
+      await result.current.handleEquals();
+    });
+
+    expect(calculatorApi.scientific).toHaveBeenCalledWith('power', 2, 3);
+    expect(result.current.displayValue).toBe('8');
+    expect(result.current.error).toBeNull();
+  });
+
+  it('handleScientificBinary (log_base) resolves correctly on equals', async () => {
+    calculatorApi.scientific.mockResolvedValue({ result: 3 });
+
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.handleDigit('8'));
+    act(() => result.current.handleScientificBinary('log_base'));
+    act(() => result.current.handleDigit('2'));
+
+    await act(async () => {
+      await result.current.handleEquals();
+    });
+
+    expect(calculatorApi.scientific).toHaveBeenCalledWith('log_base', 8, 2);
+    expect(result.current.displayValue).toBe('3');
+  });
+
+  it('handleScientificBinary sets error state when API throws on equals', async () => {
+    calculatorApi.scientific.mockRejectedValue(new Error('Math error'));
+
+    const { result } = renderHook(() => useCalculator());
+    act(() => result.current.handleDigit('2'));
+    act(() => result.current.handleScientificBinary('power'));
+    act(() => result.current.handleDigit('3'));
+
+    await act(async () => {
+      await result.current.handleEquals();
+    });
+
+    expect(result.current.error).toBe('Math error');
   });
 });
