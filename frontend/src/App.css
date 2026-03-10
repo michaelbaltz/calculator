@@ -1,0 +1,128 @@
+/* === Reset & Base === */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #1a1a2e;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #eaeaea;
+}
+
+/* === App Layout === */
+.app {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+/* === Calculator Container === */
+.calculator {
+  background-color: #16213e;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  padding: 1.5rem;
+  width: 320px;
+}
+
+/* === Display === */
+.calc-display {
+  background-color: #0f3460;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0.75rem 1rem;
+  overflow: hidden;
+}
+
+.calc-display__value {
+  font-size: 2.25rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  color: #eaeaea;
+}
+
+.calc-display__error {
+  font-size: 1rem;
+  color: #e94560;
+  word-break: break-word;
+}
+
+/* === Button Grid === */
+.calc-button-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.625rem;
+}
+
+/* Equals button spans all 4 columns */
+.calc-button--equals {
+  grid-column: 1 / -1;
+}
+
+/* === Buttons === */
+.calc-button {
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.125rem;
+  font-weight: 600;
+  padding: 1rem 0;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  width: 100%;
+  color: #eaeaea;
+}
+
+.calc-button:active {
+  transform: scale(0.94);
+}
+
+/* Default (digit) buttons */
+.calc-button--default {
+  background-color: #0f3460;
+}
+
+.calc-button--default:hover {
+  background-color: #1a4a80;
+}
+
+/* Operator buttons */
+.calc-button--operator {
+  background-color: #e94560;
+}
+
+.calc-button--operator:hover {
+  background-color: #ff6b85;
+}
+
+/* Action buttons (C, etc.) */
+.calc-button--action {
+  background-color: #533483;
+}
+
+.calc-button--action:hover {
+  background-color: #6b44a8;
+}
+
+/* Equals button */
+.calc-button--equals {
+  background-color: #e94560;
+  font-size: 1.25rem;
+}
+
+.calc-button--equals:hover {
+  background-color: #ff6b85;
+}
